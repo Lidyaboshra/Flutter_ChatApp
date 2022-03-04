@@ -1,20 +1,20 @@
 {
   "project_info": {
-    "project_number": "311947995226",
-    "project_id": "mali-app-b60a1",
-    "storage_bucket": "mali-app-b60a1.appspot.com"
+    "project_number": "695608536383",
+    "project_id": "mali-app-79d87",
+    "storage_bucket": "mali-app-79d87.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:311947995226:android:d5d5bea05351511423d063",
+        "mobilesdk_app_id": "1:695608536383:android:00fb13add237a10289778a",
         "android_client_info": {
           "package_name": "com.example.flutter_auth"
         }
       },
       "oauth_client": [
         {
-          "client_id": "311947995226-pgm1b1lsnbtln24qvapg7vsh7t58em3t.apps.googleusercontent.com",
+          "client_id": "695608536383-8q1h2bb5obtb5223guri5l54jj5fiaqg.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.flutter_auth",
@@ -22,20 +22,20 @@
           }
         },
         {
-          "client_id": "311947995226-16rssos50ci78daekgg55arj8q7bomgj.apps.googleusercontent.com",
+          "client_id": "695608536383-mtoiqu58e51cqb3sruq08c4fp8ce21vc.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCuXsGZoYEedDrISmzYOj417VVjt5OcwFw"
+          "current_key": "AIzaSyC-ue_bXrOVTe85pvSZsBEeOVREpZa0qRg"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "311947995226-16rssos50ci78daekgg55arj8q7bomgj.apps.googleusercontent.com",
+              "client_id": "695608536383-mtoiqu58e51cqb3sruq08c4fp8ce21vc.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

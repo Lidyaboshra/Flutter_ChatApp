@@ -8,8 +8,9 @@ import 'package:flutter_auth/components/already_have_an_account_acheck.dart';
 import 'package:flutter_auth/components/rounded_button.dart';
 import 'package:flutter_auth/components/rounded_input_field.dart';
 import 'package:flutter_auth/components/rounded_password_field.dart';
-import 'package:flutter_svg/svg.dart';
+//import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:modal_progress_hud/modal_progress_hud.dart';
 
 class Body extends StatefulWidget {
    Body({
@@ -32,94 +33,112 @@ bool showpass=true;
 
 final _auth = FirebaseAuth.instance;
 
+bool showSpinner=false;
+
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Background(
-      child: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                "LOGIN",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: size.height * 0.03),
-              Image.asset(
-                "assets/icons/smile.jpg",
-               // height: size.height * 0.35,
-              ),
-              SizedBox(height: size.height * 0.03),
-              RoundedInputField(
-                contoller: emailContoller,
-                type:TextInputType.emailAddress ,
-                hintText: "Your Email",
-                onChanged: (value) {},
-                validate:   (value){
-                 if(value.isEmpty){
-                    return "Please Enter Your Email";
-                    }
-                   if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
-                      .hasMatch(value)) {
-                    return ("Please Enter a valid email");
-                    }
-                   return null;
+      child: ModalProgressHUD(
+        inAsyncCall: showSpinner,
+        child: SingleChildScrollView(
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  "LOGIN",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: size.height * 0.03),
+                Image.asset(
+                  "assets/icons/smile.jpg",
+                 // height: size.height * 0.35,
+                ),
+                SizedBox(height: size.height * 0.03),
+                RoundedInputField(
+                  contoller: emailContoller,
+                  type:TextInputType.emailAddress ,
+                  hintText: "Your Email",
+                  onChanged: (value) {},
+                  validate:   (value){
+                   if(value.isEmpty){
+                      return "Please Enter Your Email";
+                      }
+                     if (!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                        .hasMatch(value)) {
+                      return ("Please Enter a valid email");
+                      }
+                     return null;
+                    },
+                  
+                ),
+                RoundedPasswordField(
+                  contoller: passwordContoller,
+                  obscure: showpass,
+                  ifpressed: (){
+                    setState(() {
+                      showpass = !showpass;
+                    });
                   },
-                
-              ),
-              RoundedPasswordField(
-                contoller: passwordContoller,
-                obscure: showpass,
-                ifpressed: (){
-                  setState(() {
-                    showpass = !showpass;
-                  });
-                },
-                 validate:   (value){
-                    RegExp regex = new RegExp(r'^.{6,}$');
-                 if(value.isEmpty){
-                    return "Please Enter Your Password";
-                  }
-                 if (!regex.hasMatch(value)) {
-                    return ("Enter Valid Password(Min. 6 Character)");
-                  }
-                   return null;
-                  },
-                text: "Password",
-                onChanged: (value) {}
-              ,
-              ),
-              RoundedButton(
-                text: "LOGIN",
-                press: () {
-                  signIn(emailContoller.text, passwordContoller.text);
-                },
-              ),
-                
-          
-              SizedBox(height: size.height * 0.03),
-            
-              AlreadyHaveAnAccountCheck(
-                press: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return SignUpScreen();
-                      },
-                    ),
-                  );
-                },
-              )
+                   validate:   (value){
+                      RegExp regex = new RegExp(r'^.{6,}$');
+                   if(value.isEmpty){
+                      return "Please Enter Your Password";
+                    }
+                   if (!regex.hasMatch(value)) {
+                      return ("Enter Valid Password(Min. 6 Character)");
+                    }
+                     return null;
+                    },
+                  text: "Password",
+                  onChanged: (value) {}
+                ,
+                ),
+                RoundedButton(
+                  text: "LOGIN",
+                  press: () {
+                    setState(() {
+                      showSpinner=true;
+                    });
+                    try{
+                      signIn(emailContoller.text, passwordContoller.text);
+                     setState(() {
+                      showSpinner=false;
+                    });}
+                    catch(e){
+                      print(e);
+
+                    }
                     
-            ]) ),
-              ),);
+                  },
+                ),
+                  
+            
+                SizedBox(height: size.height * 0.03),
+              
+                AlreadyHaveAnAccountCheck(
+                  press: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return SignUpScreen();
+                        },
+                      ),
+                    );
+                  },
+                )
+                      
+              ]) ),
+                ),
+      ),);
   }
 
 void signIn(String email, String password) async {
+
     if (formKey.currentState.validate()) {
         await _auth
             .signInWithEmailAndPassword(email: email, password: password)
@@ -130,7 +149,12 @@ void signIn(String email, String password) async {
                       builder: (context) {
                         return Chat();
                 },
-              ),)
+              ),).catchError((e) {
+                
+              
+                 Fluttertoast.showToast(msg: e.message);
+                            
+                })
                 },);
       } 
     }
