@@ -5,11 +5,11 @@ import 'package:flutter_auth/Screens/Welcome/welcome_screen.dart';
 import 'package:flutter_auth/constants.dart';
 import 'Screens/Chat/Chat_Sceen.dart';
 
-Future<void> main() async{
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
-} 
+}
 
 class MyApp extends StatelessWidget {
   final _auth = FirebaseAuth.instance;
@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
         primaryColor: kPrimaryColor,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: _auth.currentUser!=null?Chat():WelcomeScreen(),
+      home: _auth.currentUser != null ? Chat() : WelcomeScreen(),
     );
-}}
+  }
+}
