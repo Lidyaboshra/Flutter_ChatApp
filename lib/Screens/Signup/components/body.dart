@@ -4,11 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_auth/Screens/Chat/Chat_Sceen.dart';
+
 //import 'package:flutter_svg/svg.dart';
 import 'package:flutter_auth/Screens/Login/login_screen.dart';
 import 'package:flutter_auth/Screens/Signup/components/background.dart';
 import 'package:flutter_auth/Screens/Signup/components/imagepicker.dart';
+import 'package:flutter_auth/Screens/Signup/components/verify.dart';
 // import 'package:flutter_auth/Screens/Signup/components/or_divider.dart';
 // import 'package:flutter_auth/Screens/Signup/components/social_icon.dart';
 import 'package:flutter_auth/components/already_have_an_account_acheck.dart';
@@ -169,6 +170,7 @@ class _BodyState extends State<Body> {
                 RoundedButton(
                     text: "SIGNUP",
                     press: () {
+                      _trySubmit();
                       signUp(emailContoller.text, passwordContoller.text,
                           userImage);
                     }),
@@ -216,6 +218,18 @@ class _BodyState extends State<Body> {
         ),
       ),
     );
+  }
+
+  void _trySubmit() {
+    if (userImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please pick an image.'),
+          backgroundColor: Theme.of(context).errorColor,
+        ),
+      );
+      return;
+    }
   }
 
   void signUp(String email, String password, File image) async {
@@ -317,7 +331,7 @@ class _BodyState extends State<Body> {
       context,
       MaterialPageRoute(
         builder: (context) {
-          return Chat();
+          return VerifyScreen();
         },
       ),
     );

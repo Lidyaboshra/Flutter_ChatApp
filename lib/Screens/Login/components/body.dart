@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/Screens/Login/components/background.dart';
+import 'package:flutter_auth/Screens/Login/forgetpassword.dart';
 
 import 'package:flutter_auth/Screens/Signup/signup_screen.dart';
 import 'package:flutter_auth/Screens/Chat/Chat_Sceen.dart';
@@ -107,7 +108,10 @@ class _BodyState extends State<Body> {
                             fontSize: 15,
                           ),
                         ),
-                        onTap: () {}),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ResetScreen()));
+                        }),
                     RoundedButton(
                         text: "LOGIN",
                         press: () {
