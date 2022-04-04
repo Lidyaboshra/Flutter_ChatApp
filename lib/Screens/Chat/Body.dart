@@ -1,10 +1,12 @@
 //import 'dart:convert';
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_auth/Screens/Chat/function.dart';
 import 'package:flutter_auth/constants.dart';
-import 'package:http/http.dart' as http;
 
 User signinUser;
 final _firestore = FirebaseFirestore.instance;
@@ -16,22 +18,12 @@ class Body extends StatefulWidget {
   State<Body> createState() => _BodyState();
 }
 
-var url = Uri.parse("http://127.0.0.1:5000/");
-
 class _BodyState extends State<Body> {
   //For Flask >>>>
-  String name = ""; //user's response will be assigned to this variable
+  String url = '';
+  String output = 'Initial Output';
   final _formkey =
       GlobalKey<FormState>(); //key created to interact with the form
-
-  Future getdata() async {
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      setState(() {
-        messageText = response.body;
-      });
-    }
-  }
 
   final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
@@ -72,10 +64,11 @@ class _BodyState extends State<Body> {
                             controller: messageTextController,
                             onChanged: (value) {
                               messageText = value;
+                              url = 'http://10.0.2.2:5000/api?query=' +
+                                  value.toString();
+                              messageText = output;
                             },
-                            onSaved: (value) {
-                              name = value;
-                            },
+                            onSaved: (value) {},
                             decoration: InputDecoration(
                               enabledBorder: UnderlineInputBorder(
                                 borderSide: BorderSide(color: kPrimaryColor),
@@ -98,7 +91,7 @@ class _BodyState extends State<Body> {
                     child: IconButton(
                       color: kPrimaryColor,
                       disabledColor: Colors.grey[200],
-                      onPressed: () {
+                      onPressed: () async {
                         messageText.isEmpty
                             ? null
                             : _firestore.collection("Messages").add({
@@ -107,8 +100,12 @@ class _BodyState extends State<Body> {
                                 'time': FieldValue.serverTimestamp(),
                               });
                         messageTextController.clear();
+                        messageText = await fetchdata(url);
+                        var decoded = jsonDecode(messageText);
+
                         setState(() {
                           messageText = "";
+                          output = decoded['output'];
                         });
                       },
                       icon: Icon(
