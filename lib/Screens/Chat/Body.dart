@@ -1,4 +1,6 @@
 //import 'dart:convert';
+// ignore_for_file: unnecessary_statements, camel_case_types
+
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,6 +30,7 @@ class _BodyState extends State<Body> {
   final messageTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   String messageText = "";
+  String messageTextBot = "";
 
   void initState() {
     super.initState();
@@ -64,9 +67,9 @@ class _BodyState extends State<Body> {
                             controller: messageTextController,
                             onChanged: (value) {
                               messageText = value;
-                              url = 'http://10.0.2.2:5000/api?query=' +
+                              url = 'http://10.0.2.2:5000/api?msg=' +
                                   value.toString();
-                              messageText = output;
+                              messageTextBot = output;
                             },
                             onSaved: (value) {},
                             decoration: InputDecoration(
@@ -99,6 +102,13 @@ class _BodyState extends State<Body> {
                                 'sender': signinUser.email,
                                 'time': FieldValue.serverTimestamp(),
                               });
+                        messageTextBot.isEmpty
+                            ? null
+                            : _firestore.collection("Messages").add({
+                                'text': messageTextBot,
+                                'sender': "mali",
+                                'time': FieldValue.serverTimestamp(),
+                              });
                         messageTextController.clear();
                         messageText = await fetchdata(url);
                         var decoded = jsonDecode(messageText);
@@ -106,6 +116,7 @@ class _BodyState extends State<Body> {
                         setState(() {
                           messageText = "";
                           output = decoded['output'];
+                          messageTextBot = "";
                         });
                       },
                       icon: Icon(
@@ -177,6 +188,48 @@ class messageStreamBuilder extends StatelessWidget {
   }
 }
 
+class messageStreamBuilderBot extends StatelessWidget {
+  const messageStreamBuilderBot({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+        stream:
+            _firestore.collection("MessagesBot").orderBy('time').snapshots(),
+        builder: (context, snapshot) {
+          List<messageLineBot> messageWidgets = [];
+          if (!snapshot.hasData) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: kPrimaryLightColor,
+              ),
+            );
+          }
+          final messages = snapshot.data.docs.reversed;
+          for (var message in messages) {
+            final messageTextBot = message.get("text");
+            final messagesender = message.get("sender");
+            final curentUser = signinUser.email;
+            if (curentUser == messagesender) {}
+            final messagewidget = messageLineBot(
+              text: messageTextBot,
+              sender: messagesender,
+              isMe: curentUser == messagesender,
+            );
+            messageWidgets.add(messagewidget);
+          }
+
+          return Expanded(
+            child: ListView(
+              reverse: true,
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+              children: messageWidgets,
+            ),
+          );
+        });
+  }
+}
+
 class messageLine extends StatelessWidget {
   const messageLine({this.sender, this.text, this.isMe, Key key})
       : super(key: key);
@@ -189,8 +242,7 @@ class messageLine extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text("$sender",
               style: TextStyle(
@@ -199,24 +251,58 @@ class messageLine extends StatelessWidget {
               )),
           Material(
             elevation: 5,
-            borderRadius: isMe
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  )
-                : BorderRadius.only(
-                    topRight: Radius.circular(30),
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-            color: isMe ? kPrimaryLightColor : kPrimaryColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+            color: kPrimaryLightColor,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: Text(
                 '$text',
-                style: TextStyle(
-                    fontSize: 18, color: isMe ? Colors.black : Colors.white),
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class messageLineBot extends StatelessWidget {
+  const messageLineBot({this.sender, this.text, this.isMe, Key key})
+      : super(key: key);
+  final String sender;
+  final String text;
+  final bool isMe;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("$sender",
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black45,
+              )),
+          Material(
+            elevation: 5,
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(30),
+              bottomLeft: Radius.circular(30),
+              bottomRight: Radius.circular(30),
+            ),
+            color: kPrimaryColor,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              child: Text(
+                '$text',
+                style: TextStyle(fontSize: 18, color: Colors.white),
               ),
             ),
           ),
