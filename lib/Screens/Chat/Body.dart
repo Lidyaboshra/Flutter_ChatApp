@@ -46,6 +46,7 @@ class _BodyState extends State<Body> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             messageStreamBuilder(),
+            // messageStreamBuilderBot(),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
@@ -106,7 +107,7 @@ class _BodyState extends State<Body> {
                             ? null
                             : _firestore.collection("Messages").add({
                                 'text': messageTextBot,
-                                'sender': "mali",
+                                'sender': "maliapp@api.com",
                                 'time': FieldValue.serverTimestamp(),
                               });
                         messageTextController.clear();
@@ -165,18 +166,29 @@ class messageStreamBuilder extends StatelessWidget {
           }
           final messages = snapshot.data.docs.reversed;
           for (var message in messages) {
-            final messagetext = message.get("text");
-            final messagesender = message.get("sender");
-            final curentUser = signinUser.email;
-            if (curentUser == messagesender) {}
-            final messagewidget = messageLine(
-              text: messagetext,
-              sender: messagesender,
-              isMe: curentUser == messagesender,
-            );
-            messageWidgets.add(messagewidget);
+            var messagetext = message.get("text");
+            var messageTextBot = message.get("text");
+            var messagesenderBot = "maliapp@api.com";
+            var messagesender = message.get("sender");
+            // var curentUser = signinUser.email;
+            if (messagesender == "maliapp@api.com") {
+              var messagewidget = messageLine(
+                text: messageTextBot,
+                sender: messagesenderBot,
+                isMe: false,
+                type: "bot",
+              );
+              messageWidgets.add(messagewidget);
+            } else {
+              var messagewidget = messageLine(
+                text: messagetext,
+                sender: messagesender,
+                isMe: true,
+                type: "user",
+              );
+              messageWidgets.add(messagewidget);
+            }
           }
-
           return Expanded(
             child: ListView(
               reverse: true,
@@ -188,61 +200,65 @@ class messageStreamBuilder extends StatelessWidget {
   }
 }
 
-class messageStreamBuilderBot extends StatelessWidget {
-  const messageStreamBuilderBot({Key key}) : super(key: key);
+// class messageStreamBuilderBot extends StatelessWidget {
+//   const messageStreamBuilderBot({Key key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-        stream:
-            _firestore.collection("MessagesBot").orderBy('time').snapshots(),
-        builder: (context, snapshot) {
-          List<messageLineBot> messageWidgets = [];
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(
-                color: kPrimaryLightColor,
-              ),
-            );
-          }
-          final messages = snapshot.data.docs.reversed;
-          for (var message in messages) {
-            final messageTextBot = message.get("text");
-            final messagesender = message.get("sender");
-            final curentUser = signinUser.email;
-            if (curentUser == messagesender) {}
-            final messagewidget = messageLineBot(
-              text: messageTextBot,
-              sender: messagesender,
-              isMe: curentUser == messagesender,
-            );
-            messageWidgets.add(messagewidget);
-          }
+//   @override
+//   Widget build(BuildContext context) {
+//     return StreamBuilder<QuerySnapshot>(
+//         stream:
+//             _firestore.collection("MessagesBot").orderBy('time').snapshots(),
+//         builder: (context, snapshot) {
+//           List<messageLine> messageWidgets = [];
+//           if (!snapshot.hasData) {
+//             return Center(
+//               child: CircularProgressIndicator(
+//                 color: kPrimaryLightColor,
+//               ),
+//             );
+//           }
+//           var messages = snapshot.data.docs.reversed;
+//           for (var message in messages) {
+//             var messageTextBot = message.get("text");
+//             var messagesender = "maliapp@api.com";
+//             var curentUser = "maliapp@api.com";
+//             if (curentUser == "maliapp@api.com") {
+//               var messagewidget = messageLine(
+//                 text: messageTextBot,
+//                 sender: messagesender,
+//                 isMe: false,
+//                 type: "bot",
+//               );
+//               messageWidgets.add(messagewidget);
+//             }
+//           }
 
-          return Expanded(
-            child: ListView(
-              reverse: true,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-              children: messageWidgets,
-            ),
-          );
-        });
-  }
-}
+//           return Expanded(
+//             child: ListView(
+//               reverse: true,
+//               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+//               children: messageWidgets,
+//             ),
+//           );
+//         });
+//   }
+// }
 
 class messageLine extends StatelessWidget {
-  const messageLine({this.sender, this.text, this.isMe, Key key})
+  const messageLine({this.sender, this.text, this.isMe, this.type, Key key})
       : super(key: key);
   final String sender;
   final String text;
   final bool isMe;
+  final String type;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            type == "user" ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Text("$sender",
               style: TextStyle(
@@ -251,17 +267,25 @@ class messageLine extends StatelessWidget {
               )),
           Material(
             elevation: 5,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-            color: kPrimaryLightColor,
+            borderRadius: type == "user"
+                ? BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  )
+                : BorderRadius.only(
+                    topRight: Radius.circular(30),
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+            color: type == "user" ? kPrimaryLightColor : kPrimaryColor,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               child: Text(
                 '$text',
-                style: TextStyle(fontSize: 18, color: Colors.black),
+                style: TextStyle(
+                    fontSize: 18,
+                    color: type == "user" ? Colors.black : Colors.white),
               ),
             ),
           ),
@@ -270,44 +294,84 @@ class messageLine extends StatelessWidget {
     );
   }
 }
+// class messageLine extends StatelessWidget {
+//   const messageLine({this.sender, this.text, this.isMe, Key key})
+//       : super(key: key);
+//   final String sender;
+//   final String text;
+//   final bool isMe;
 
-class messageLineBot extends StatelessWidget {
-  const messageLineBot({this.sender, this.text, this.isMe, Key key})
-      : super(key: key);
-  final String sender;
-  final String text;
-  final bool isMe;
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.all(10.0),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.end,
+//         children: [
+//           Text("$sender",
+//               style: TextStyle(
+//                 fontSize: 12,
+//                 color: Colors.black45,
+//               )),
+//           Material(
+//             elevation: 5,
+//             borderRadius: BorderRadius.only(
+//               topLeft: Radius.circular(30),
+//               bottomLeft: Radius.circular(30),
+//               bottomRight: Radius.circular(30),
+//             ),
+//             color: kPrimaryLightColor,
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+//               child: Text(
+//                 '$text',
+//                 style: TextStyle(fontSize: 18, color: Colors.black),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("$sender",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.black45,
-              )),
-          Material(
-            elevation: 5,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(30),
-              bottomLeft: Radius.circular(30),
-              bottomRight: Radius.circular(30),
-            ),
-            color: kPrimaryColor,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: Text(
-                '$text',
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// class messageLineBot extends StatelessWidget {
+//   const messageLineBot({this.sender, this.text, this.isMe, Key key})
+//       : super(key: key);
+//   final String sender;
+//   final String text;
+//   final bool isMe;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.all(10.0),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text("$sender",
+//               style: TextStyle(
+//                 fontSize: 12,
+//                 color: Colors.black45,
+//               )),
+//           Material(
+//             elevation: 5,
+//             borderRadius: BorderRadius.only(
+//               topRight: Radius.circular(30),
+//               bottomLeft: Radius.circular(30),
+//               bottomRight: Radius.circular(30),
+//             ),
+//             color: kPrimaryColor,
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+//               child: Text(
+//                 '$text',
+//                 style: TextStyle(fontSize: 18, color: Colors.white),
+//               ),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
