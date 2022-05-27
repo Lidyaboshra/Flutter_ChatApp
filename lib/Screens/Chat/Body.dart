@@ -103,6 +103,10 @@ class _BodyState extends State<Body> {
                                 'sender': signinUser.email,
                                 'time': FieldValue.serverTimestamp(),
                               });
+
+                        messageTextController.clear();
+                        messageTextBot = await fetchdata(url);
+
                         messageTextBot.isEmpty
                             ? null
                             : _firestore.collection("Messages").add({
@@ -110,13 +114,9 @@ class _BodyState extends State<Body> {
                                 'sender': "maliapp@api.com",
                                 'time': FieldValue.serverTimestamp(),
                               });
-                        messageTextController.clear();
-                        messageText = await fetchdata(url);
-                        var decoded = (messageText);
-
                         setState(() {
                           messageText = "";
-                          output = decoded;
+                          output = messageTextBot;
                           messageTextBot = "";
                         });
                       },
